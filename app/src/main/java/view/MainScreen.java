@@ -395,7 +395,11 @@ public class MainScreen extends javax.swing.JFrame {
         // TODO add your handling code here:
 
         TaskDialogScreen taskDialogScreen = new TaskDialogScreen(this, rootPaneCheckingEnabled);
-        // taskDialogScreen.setProject(null);
+        
+        int projectIndex = jListProjects.getSelectedIndex();
+        Project project = (Project) projectsModel.get(projectIndex);
+        taskDialogScreen.setProject(project);
+        
         taskDialogScreen.setVisible(rootPaneCheckingEnabled);
 
     }// GEN-LAST:event_jLabelTasksAddMouseClicked
@@ -489,14 +493,45 @@ public class MainScreen extends javax.swing.JFrame {
 
         tasksModel = new TaskTableModel();
         jTableTasks.setModel(tasksModel);
-        loadTasks(5);
+        
+        if(!projectsModel.isEmpty()) {
+            jListProjects.setSelectedIndex(0);
+            int projectIndex = jListProjects.getSelectedIndex();
+            Project project = (Project) projectsModel.get(projectIndex);
+            loadTasks(project.getId());
+        }
     }
 
     public void loadTasks(int idProject) {
         List<Task> tasks = taskController.getAll(idProject);
         
         tasksModel.setTasks(tasks);
+        
+        showJTableTasks(!tasks.isEmpty());
     }
+    
+    private void showJTableTasks(boolean hasTasks) {
+    
+        if(hasTasks) {
+            if(jPanelEmptyList.isVisible()) {
+                jPanelEmptyList.setVisible(false);
+                jPanel6.remove(jPanelEmptyList);
+            }
+            
+            jPanel6.add(jScrollPaneTasks);
+            jScrollPaneTasks.setVisible(true);
+            jScrollPaneTasks.setSize(jPanel6.getWidth(), jPanel6.getHeight());
+        } else {
+            if(jScrollPaneTasks.isVisible()) {
+                jScrollPaneTasks.setVisible(false);
+                jPanel6.remove(jScrollPaneTasks);
+            }
+            
+            jPanel6.add(jPanelEmptyList);
+            jPanelEmptyList.setVisible(true);
+            jPanelEmptyList.setSize(jPanel6.getWidth(), jPanel6.getHeight());
+        }
+    } 
 
     public void loadProjects() {
         List<Project> projects = projectController.getAll();
@@ -513,3 +548,6 @@ public class MainScreen extends javax.swing.JFrame {
     }
 
 }
+
+
+//17.E
