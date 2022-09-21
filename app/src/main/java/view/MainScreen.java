@@ -7,6 +7,8 @@ package view;
 import controller.ProjectController;
 import controller.TaskController;
 import util.TaskTableModel;
+import util.DeadlineColumnCellRederer;
+import util.ButtonColumnCellRenderer;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
@@ -30,9 +32,11 @@ public class MainScreen extends javax.swing.JFrame {
 
     public MainScreen() {
         initComponents();
-        decorateTableTask();
+        
         initDataController();
         initComponentsModel();
+        
+        decorateTableTask();
     }
 
     /**
@@ -246,6 +250,7 @@ public class MainScreen extends javax.swing.JFrame {
 
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel6.setLayout(new java.awt.BorderLayout());
 
         jTableTasks.setBackground(new java.awt.Color(255, 255, 255));
         jTableTasks.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -287,22 +292,7 @@ public class MainScreen extends javax.swing.JFrame {
         });
         jScrollPaneTasks.setViewportView(jTableTasks);
 
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel6Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPaneTasks)
-                .addContainerGap())
-        );
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel6Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPaneTasks, javax.swing.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jPanel6.add(jScrollPaneTasks, java.awt.BorderLayout.CENTER);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -353,15 +343,24 @@ public class MainScreen extends javax.swing.JFrame {
         // TODO add your handling code here:
         int rowIndex = jTableTasks.rowAtPoint(evt.getPoint());
         int columnIndex = jTableTasks.columnAtPoint(evt.getPoint());
-        
+        Task task = tasksModel.getTasks().get(rowIndex);
         switch(columnIndex) {
             case 3:
-                Task task = tasksModel.getTasks().get(rowIndex);
+                
                 taskController.update(task);
                 break;
             case 4:
+                
                 break;
             case 5:
+                
+                taskController.removeById(task.getId());
+                tasksModel.getTasks().remove(task);
+                
+                int projectIndex =  jListProjects.getSelectedIndex();
+                Project project = (Project) projectsModel.get(projectIndex);
+                loadTasks(project.getId());
+                
                 break;
         
         }
@@ -400,7 +399,17 @@ public class MainScreen extends javax.swing.JFrame {
         Project project = (Project) projectsModel.get(projectIndex);
         taskDialogScreen.setProject(project);
         
-        taskDialogScreen.setVisible(rootPaneCheckingEnabled);
+        taskDialogScreen.setVisible(true);
+            
+        taskDialogScreen.addWindowListener(new WindowAdapter() {
+            
+            public void windowClosed(WindowEvent e) {
+                int projectIndex = jListProjects.getSelectedIndex();
+                Project project = (Project) projectsModel.get(projectIndex);
+                loadTasks(project.getId());
+            }
+           
+        });
 
     }// GEN-LAST:event_jLabelTasksAddMouseClicked
 
@@ -476,6 +485,11 @@ public class MainScreen extends javax.swing.JFrame {
         jTableTasks.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         jTableTasks.getTableHeader().setBackground(new Color(0, 153, 102));
         jTableTasks.getTableHeader().setForeground(new Color(255, 255, 255));
+        
+        jTableTasks.getColumnModel().getColumn(2).setCellRenderer(new DeadlineColumnCellRederer());
+        
+        jTableTasks.getColumnModel().getColumn(4).setCellRenderer(new ButtonColumnCellRenderer("edit"));
+        jTableTasks.getColumnModel().getColumn(5).setCellRenderer(new ButtonColumnCellRenderer("delete"));
 
         // Criando um sort Automático para as colunas da table
         jTableTasks.setAutoCreateRowSorter(true);
